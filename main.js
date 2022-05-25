@@ -144,7 +144,8 @@ function letterInvoer(e){
     game.spelers[game.beurt].foutLetter.push(letter);
     game.spelers[game.beurt].fouten++;
     // fouten display updaten
-    document.getElementById('fouten').innerHTML = game.spelers[game.beurt].foutLetter;
+    document.getElementById('foutLetters').innerHTML = game.spelers[game.beurt].foutLetter;
+    document.getElementById('fouten').innerHTML = ` ${game.spelers[game.beurt].fouten} / 5 fouten`;
     // controleren of het woord geraden is
     if(game.spelers[game.beurt].fouten < 5){
       // doe niks
@@ -157,6 +158,24 @@ function letterInvoer(e){
 
 function win(){
   document.getElementById('titel').innerHTML = `${game.spelers[game.beurt].naam} heeft gewonnen!`;
+  document.removeEventListener('keyup', letterInvoer);
+
+  // controleren of er nog spelers zijn
+  game.beurt++;
+  if(game.beurt < game.spelers.length){
+
+// elementen resetten
+    document.getElementById('woordDisplay').remove();
+    document.getElementById('fouten').remove();
+
+    startGame();
+  } else {
+    endGame();
+  }
+}
+
+function verlies(){
+  document.getElementById('titel').innerHTML = `${game.spelers[game.beurt].naam} heeft verloren!`;
   document.removeEventListener('keyup', letterInvoer);
 
   // controleren of er nog spelers zijn
