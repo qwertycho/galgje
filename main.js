@@ -1,11 +1,14 @@
 // todo
 // knop maken om het ingevoerde woord te hiden
 // check maken zodat alleen geldige letters worden ingevoerd
+// alles alementen die worden verwijderd dezelfde class geven om alles netter te maken
+// element voor de fouten display aananmaken
 
 const game = {
     aantalSpelers: 0,
     beurt: 0,
     spelers: [],
+    spelerSetup: 0,
 }
 
 class Speler {
@@ -14,219 +17,165 @@ class Speler {
     this.woord = woord;
     this.foutLetter = [];
     this.fouten = 0;
+    this.geraden = [];
   }
 }
 
-function setup() {
-  let spelersPrompt = document.createElement("input");
-  spelersPrompt.className = "spelersPrompt";
-  spelersPrompt.type = "number";
-  spelersPrompt.placeholder = "Hoeveel spelers zijn er? Max 2";
-  spelersPrompt.max = "2";
-  spelersPrompt.value = "1";
+function aantalSpelers(){
 
-  let submit = document.createElement("button");
-  submit.className = "submit";
-  submit.innerHTML = "Submit";
+  // aantal speler knop aanmaken
+  const aantalSpelersInput = document.createElement('input');
+  aantalSpelersInput.setAttribute('type', 'number');
+  aantalSpelersInput.setAttribute('id', 'aantalSpelers');
+  aantalSpelersInput.setAttribute('placeholder', 'aantal spelers');
+  aantalSpelersInput.setAttribute('min', '1');
+  aantalSpelersInput.setAttribute('max', '10');
+  aantalSpelersInput.setAttribute('value', '1');
 
-  submit.addEventListener("click", function () {
-    game.aantalSpelers = spelersPrompt.value;
-    document.body.removeChild(spelersPrompt);
-    document.body.removeChild(submit);
-    spelerSetup()
+  document.body.appendChild(aantalSpelersInput);
+
+  // submit knop aanmaken
+  const aantalSpelersButton = document.createElement('button');
+  aantalSpelersButton.setAttribute('id', 'aantalSpelersButton');
+
+  // eventlistener voor het aantal spelers
+  aantalSpelersButton.addEventListener('click', function(){
+    game.aantalSpelers = parseInt(document.getElementById('aantalSpelers').value);
+    document.getElementById('aantalSpelers').remove();
+    document.getElementById('aantalSpelersButton').remove();
+    spelerData();
   });
-  document.body.appendChild(spelersPrompt);
-  document.body.appendChild(submit);
 
+  aantalSpelersButton.innerHTML = 'Submit';
+
+  document.body.appendChild(aantalSpelersButton);
 }
- 
-// functie voor het krijgen speler data
-function spelerSetup() {
-  let aantalSpelers = game.aantalSpelers;
-  let aantalSetup = 1;
-// het aanmaken van spelernaam input
-    const spelerNaamInput = document.createElement("input");
-    spelerNaamInput.className = "spelerNaam";
-    spelerNaamInput.type = "text";
-    spelerNaamInput.placeholder = "Naam speler 1";
-    spelerNaamInput.value = "Speler 1";
 
-    const spelerWoordInput = document.createElement("input");
-    spelerWoordInput.className = "spelerWoord";
-    spelerWoordInput.type = "text";
-    spelerWoordInput.placeholder = "Woord speler 1";
-    spelerWoordInput.value = "woord1";
+// het krijgen van de data van de spelers
+function spelerData(){
+    // elementen voor de user input aanmaken
 
-    const submitButton = document.createElement("button");
-    submitButton.className = "submit";
-    submitButton.innerHTML = "Submit";
+    // speler naam element
+  const spelerNaamInput = document.createElement('input');
+  spelerNaamInput.setAttribute('type', 'text');
+  spelerNaamInput.setAttribute('placeholder', `speler ${game.spelerSetup + 1}`);
+  spelerNaamInput.setAttribute('id', 'spelerNaamInput');
+// speler woord element
+  const spelerWoordInput = document.createElement('input');
+  spelerWoordInput.setAttribute('type', 'text');
+  spelerWoordInput.setAttribute('placeholder', `woord van speler ${game.spelerSetup + 1}`);	
+  spelerWoordInput.setAttribute('id', 'spelerWoordInput');
+// speler submit knop
+  const spelerButton = document.createElement('button');
+  spelerButton.setAttribute('id', 'spelerButton');
+  spelerButton.innerHTML = 'Submit';
 
-    // listener voor het krijgen van de speler data
-    submitButton.addEventListener("click", function () {
-      if(aantalSetup < aantalSpelers){
-        // de data opslaan in een niewe speler
-        let spelerNaam = document.querySelector(".spelerNaam").value;
-        let spelerWoord = document.querySelector(".spelerWoord").value;
-        game.spelers.push(new Speler(spelerNaam, spelerWoord));
-
-        // de input velden leegmaken
-        aantalSetup++;
-        document.querySelector(".spelerNaam").placeholder = `Naam speler ${aantalSetup}`;
-        document.querySelector(".spelerNaam").value = null;
-        document.querySelector(".spelerWoord").placeholder = `Woord speler ${aantalSetup}`;
-        document.querySelector(".spelerWoord").value = null;
-      } else{
-        let spelerNaam = document.querySelector(".spelerNaam").value;
-        let spelerWoord = document.querySelector(".spelerWoord").value;
-        game.spelers.push(new Speler(spelerNaam, spelerWoord));
-
-        document.body.removeChild(spelerNaamInput);
-        document.body.removeChild(spelerWoordInput);
-        document.body.removeChild(submitButton);
+  // submit eventlistener
+  spelerButton.addEventListener('click', function(){
+    // input validatie
+    if(spelerNaamInput.value !== '' && spelerWoordInput.value !== ''){
+      let speler = new Speler(spelerNaamInput.value, spelerWoordInput.value);
+      game.spelers.push(speler);
+      spelerNaamInput.remove();
+      spelerWoordInput.remove();
+      spelerButton.remove();
+      game.spelerSetup++;
+      // als er niet meer spelers zijn dan gaat het spel starten
+      if(game.spelerSetup < game.aantalSpelers){
+        spelerData();
+      } else {
         startGame();
       }
-
-    });
-    document.body.appendChild(spelerNaamInput);
-    document.body.appendChild(spelerWoordInput);
-    document.body.appendChild(submitButton);
-}
-
-  
-
-  // functie voor het starten van het spel
-  // dit zet de gegokte letters op het scherm en het woord
-function startGame(){
-
-  if(game.beurt == 0){
-    let titel = document.createElement("h2");
-    titel.innerHTML = `${game.spelers[game.beurt].naam} mag raden wat het woord is`;
-    titel.className = "titel";
-    titel.id = "titel";
-    document.body.appendChild(titel);
-
-    let woordDisplay = document.createElement("div");
-    woordDisplay.className = "woordDisplay";
-    woordDisplay.id = "woordDisplay";
-
-    for(let i = 0; i < game.spelers[game.beurt].woord.length; i++){
-        woordDisplay.innerHTML += "_";
-    }
-    document.body.appendChild(woordDisplay);
-
-    let input = document.createElement("h5");
-    input.className = "input";
-    input.innerHTML = "Typ hier je letter";
-    input.id = "input";
-    document.body.appendChild(input);
-    raden();
-  } else {
-    document.getElementById("titel").innerHTML = `${game.spelers[game.beurt].naam} mag raden wat het woord is`;
-    document.getElementById("woordDisplay").innerHTML = "";
-    for(let i = 0; i < game.spelers[game.beurt].woord.length; i++){
-        document.getElementById("woordDisplay").innerHTML += "_";
-    }
-  }
-}
-
-// functie voor het krijgen van user input en controle
-function raden() {
-  document.addEventListener("keydown", function (event) {
-  let letter = event.key;
-  // controleren of de speler niet af is
-    if(game.spelers[game.beurt].fouten < 5){
-      // controleren of de letter goed is
-      if (game.spelers[game.beurt].woord.indexOf(letter) > -1) {
-        let letterDisplay = document.querySelectorAll(".woordDisplay")[0];
-        goed(letter, letterDisplay);
-      } else {
-        fout(letter)
-      }
-    }else{
-      gameOver();
     }
   });
+  document.body.appendChild(spelerNaamInput);
+  document.body.appendChild(spelerWoordInput);
+  document.body.appendChild(spelerButton);
+
 }
 
-function goed(letter, letterDisplay) {
-  // loopt door het woord en plaatst de letter op de juiste plek
-  for (let i = 0; i < game.spelers[game.beurt].woord.length; i++) {
-    if (letter == game.spelers[game.beurt].woord[i]) {
-      let letterArray = letterDisplay.innerHTML.split("");
-      letterArray[i] = letter;
-      letterDisplay.innerHTML = letterArray.join("");
+function startGame(){
+  let woordDisplay = document.createElement('div');
+  woordDisplay.setAttribute('id', 'woordDisplay');
+  // woord display vullen met placeholder
+  for(let i = 0; i < game.spelers[game.beurt].woord.length; i++){
+    game.spelers[game.beurt].geraden.push(' _ ');
+  };
+  woordDisplay.innerHTML = game.spelers[game.beurt].geraden;
+  document.body.appendChild(woordDisplay);
+  
+  // titel aanpassen
+  document.getElementById('titel').innerHTML = `${game.spelers[game.beurt].naam}'s beurt`;
+
+  // event listener voor het invoeren van de letter
+  document.addEventListener('keydown', letterInvoer);
+}
+
+function letterInvoer(e){
+  let letter = e.key;
+  // controleren of de letter al is geraden
+  if(game.spelers[game.beurt].geraden.includes(letter)){
+    // doe niks
+  }
+  // controler of de letter in het woord zit
+  else if(game.spelers[game.beurt].woord.includes(letter)){
+    // letter in het woord zetten
+    for(let i = 0; i < game.spelers[game.beurt].woord.length; i++){
+      if(game.spelers[game.beurt].woord[i] === letter){
+       game.spelers[game.beurt].geraden[i] = letter;
+       document.getElementById('woordDisplay').innerHTML = game.spelers[game.beurt].geraden;
+      }
     }
-    if(letterDisplay.innerHTML == game.spelers[game.beurt].woord){
+    // woord display updaten
+    document.getElementById('woordDisplay').innerHTML = game.spelers[game.beurt].geraden;
+    // controleren of het woord geraden is
+    let geradenWoord = "";
+    for(let i = 0; i < game.spelers[game.beurt].geraden.length; i++){
+      geradenWoord += game.spelers[game.beurt].geraden[i];
+    }
+    if(geradenWoord == game.spelers[game.beurt].woord){
       win();
     }
-  }
-}
 
-function fout(letter) {
-  // controle of de letter al opgelsagen is
-  if (game.spelers[game.beurt].foutLetter.indexOf(letter) == -1) {
-    game.spelers[game.beurt].foutLetter.push(letter);
-    document.getElementById("foutLetters").innerHTML = game.spelers[game.beurt].foutLetter;
-    game.spelers[game.beurt].fouten++;
   } else {
-    document.getElementById("foutLetters").innerHTML = game.spelers[game.beurt].foutLetter;
+   if(game.spelers[game.beurt].foutLetter.includes(letter)){
+    // doe niks
+   } else {
+    game.spelers[game.beurt].foutLetter.push(letter);
+    game.spelers[game.beurt].fouten++;
+    // fouten display updaten
+    document.getElementById('fouten').innerHTML = game.spelers[game.beurt].foutLetter;
+    // controleren of het woord geraden is
+    if(game.spelers[game.beurt].fouten < 5){
+      // doe niks
+    } else {
+      verlies();
+    }
+   }
   }
-    document.getElementById("fouten").innerHTML = `Fouten: ${game.spelers[game.beurt].fouten} / 5`;
 }
 
 function win(){
-    let win = document.createElement("h2");
-    win.innerHTML = `${game.spelers[game.beurt].naam} heeft gewonnen! Het woord was ${game.spelers[game.beurt].woord}`;
-    let winButton = document.createElement("button");
-    winButton.innerHTML = "Nieuw spel";
-    document.body.appendChild(win);
-    document.body.appendChild(winButton);
-    if(game.beurt == 1){
-    winButton.addEventListener("click", function () {
-        document.body.removeChild(win);
-        document.body.removeChild(winButton);
-        volgendeSpeler();
-    });
-  } else{
-    winButton.addEventListener("click", function () {
-        document.body.removeChild(win);
-        document.body.removeChild(winButton);
-        volgendeSpeler();
-    });
-  }
-}
+  document.getElementById('titel').innerHTML = `${game.spelers[game.beurt].naam} heeft gewonnen!`;
+  document.removeEventListener('keyup', letterInvoer);
 
-function gameOver() {
-  alert("Game Over");
-}
-function volgendeSpeler(){
+  // controleren of er nog spelers zijn
   game.beurt++;
+  if(game.beurt < game.spelers.length){
 
-  if(game.beurt < game.aantalSpelers){
-    console.log("startgame");
+// elementen resetten
+    document.getElementById('woordDisplay').remove();
+    document.getElementById('fouten').remove();
+
     startGame();
-
-  }else{
-    console.log("game over");
-    resetGame() 
+  } else {
+    endGame();
   }
 }
 
-function resetGame(){
-  // alles leegmaken zodat setupgame kan werken
-  // de spelernamen moeten wel onthouden worden
-
-  game.spelers = [];
-  game.beurt = 0;
-  game.aantalSpelers = 0;
-  document.body.removeChild(document.getElementById("titel"));
-  document.body.removeChild(document.getElementById("woordDisplay"));
-  document.getElementById("foutLetters").innerHTML = "";
-  document.getElementById("fouten").innerHTML = "";
-  document.body.removeChild(document.getElementById("input"));
-
-  setup();
-
+function endGame(){
+  document.getElementById('titel').innerHTML = 'Game Over';
+  document.removeEventListener('keyup', letterInvoer);
 }
 
-setup()
+aantalSpelers();
