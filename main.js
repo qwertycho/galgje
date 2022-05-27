@@ -2,7 +2,9 @@
 // knop maken om het ingevoerde woord te hiden
 // check maken zodat alleen geldige letters worden ingevoerd
 // alles alementen die worden verwijderd dezelfde class geven om alles netter te maken
-// element voor de fouten display aananmaken
+// verlies en win in een functie zetten
+
+import wordlist from './wordlist.js';
 
 const game = {
     aantalSpelers: 0,
@@ -43,7 +45,11 @@ function aantalSpelers(){
     game.aantalSpelers = parseInt(document.getElementById('aantalSpelers').value);
     document.getElementById('aantalSpelers').remove();
     document.getElementById('aantalSpelersButton').remove();
+    if(game.aantalSpelers > 1){
     spelerData();
+    } else {
+      singlePlayer();
+    }
   });
 
   aantalSpelersButton.innerHTML = 'Submit';
@@ -65,6 +71,8 @@ function spelerData(){
   spelerWoordInput.setAttribute('type', 'text');
   spelerWoordInput.setAttribute('placeholder', `woord van speler ${game.spelerSetup + 1}`);	
   spelerWoordInput.setAttribute('id', 'spelerWoordInput');
+  document.body.appendChild(spelerWoordInput);
+
 // speler submit knop
   const spelerButton = document.createElement('button');
   spelerButton.setAttribute('id', 'spelerButton');
@@ -81,15 +89,17 @@ function spelerData(){
       spelerButton.remove();
       game.spelerSetup++;
       // als er niet meer spelers zijn dan gaat het spel starten
-      if(game.spelerSetup < game.aantalSpelers){
-        spelerData();
-      } else {
-        startGame();
-      }
+     
+        if(game.spelerSetup < game.aantalSpelers){
+          spelerData();
+        } else {
+          startGame();
+        }
+      
+
     }
   });
   document.body.appendChild(spelerNaamInput);
-  document.body.appendChild(spelerWoordInput);
   document.body.appendChild(spelerButton);
 
 }
@@ -156,45 +166,59 @@ function letterInvoer(e){
   }
 }
 
-function win(){
-  document.getElementById('titel').innerHTML = `${game.spelers[game.beurt].naam} heeft gewonnen!`;
-  document.removeEventListener('keyup', letterInvoer);
+function endGame(status){
+  switch (status) {
+    case "win":
+      document.getElementById('titel').innerHTML = `${game.spelers[game.beurt].naam} heeft gewonnen!`;
+      if(game.spelerSetup < game.aantalSpelers){
+        document.getElementById('titel').innerHTML = `${game.spelers[game.beurt].naam} heeft gewonnen!`;
+        document.getElementById('woordDisplay').innerHTML = `${game.spelers[game.beurt].woord}`;
+      }0
 
-  // controleren of er nog spelers zijn
-  game.beurt++;
-  if(game.beurt < game.spelers.length){
+      break;
 
-// elementen resetten
-    document.getElementById('woordDisplay').remove();
-    document.getElementById('fouten').remove();
+    case "verlies":
+      document.getElementById('titel').innerHTML = `${game.spelers[game.beurt].naam} heeft verloren! Het woord was ${game.spelers[game.beurt].woord}`;
 
-    startGame();
-  } else {
-    endGame();
+      break;
+  
+    default:
+      break;
   }
 }
 
-function verlies(){
-  document.getElementById('titel').innerHTML = `${game.spelers[game.beurt].naam} heeft verloren!`;
-  document.removeEventListener('keyup', letterInvoer);
+function singlePlayer() {
+  const spelerNaamInput = document.createElement("input");
+  spelerNaamInput.setAttribute("type", "text");
+  spelerNaamInput.setAttribute("placeholder", `speler ${game.spelerSetup + 1}`);
+  spelerNaamInput.setAttribute("id", "spelerNaamInput");
 
-  // controleren of er nog spelers zijn
-  game.beurt++;
-  if(game.beurt < game.spelers.length){
+  // speler submit knop
+  const spelerButton = document.createElement("button");
+  spelerButton.setAttribute("id", "spelerButton");
+  spelerButton.innerHTML = "Submit";
 
-// elementen resetten
-    document.getElementById('woordDisplay').remove();
-    document.getElementById('fouten').remove();
-
-    startGame();
-  } else {
-    endGame();
-  }
+    // submit eventlistener
+    spelerButton.addEventListener('click', function(){
+      // input validatie
+      if(spelerNaamInput.value !== ''){
+        let speler = new Speler(spelerNaamInput.value, "bergkip");
+        game.spelers.push(speler);
+        spelerNaamInput.remove();
+        spelerButton.remove();
+        randomWord();
+      }
+    });
+    document.body.appendChild(spelerNaamInput);
+    document.body.appendChild(spelerButton);
+  
 }
 
-function endGame(){
-  document.getElementById('titel').innerHTML = 'Game Over';
-  document.removeEventListener('keyup', letterInvoer);
+function randomWord(){
+  let random = Math.floor(Math.random() * wordlist.length);
+  game.spelers[0].woord = wordlist[random];
+  console.log(wordlist);
+  startGame();
 }
 
 aantalSpelers();
